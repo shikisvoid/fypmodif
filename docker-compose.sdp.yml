@@ -1,0 +1,530 @@
+﻿# Hospital Management System with Software-Defined Perimeter (SDP)
+# Identity-aware access is enforced by the API Gateway.
+
+networks:
+  sdp-net:
+    driver: bridge
+
+services:
+  db:
+    platform: linux/amd64
+    image: postgres:14-alpine
+    container_name: hospital-db
+    networks:
+      - sdp-net
+    environment:
+      POSTGRES_USER: hospital
+      POSTGRES_PASSWORD: F1UFDk8H36Ry2RITAvnErulW
+      POSTGRES_DB: hospital_db
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hospital -d hospital_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  adminer:
+    platform: linux/amd64
+    image: adminer:latest
+    container_name: hospital-adminer
+    networks:
+      - sdp-net
+    ports:
+      - "127.0.0.1:8081:8080"
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  backend:
+    platform: linux/amd64
+    image: node:18-alpine
+    container_name: hospital-backend
+    working_dir: /app
+    networks:
+      - sdp-net
+    environment:
+      NODE_ENV: development
+      JWT_SECRET: sdp_phase2_shared_secret_change_me
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: hospital
+      DB_PASSWORD: F1UFDk8H36Ry2RITAvnErulW
+      DB_NAME: hospital_db
+      ENCRYPTION_SERVICE_URL: http://encryption:3001
+      EDR_HOST_ID: hospital-backend
+      EDR_TARGET: http://monitor:9090/ingest/telemetry
+    volumes:
+      - ./Hospital-Backend:/app
+      - ./agents/real-edr:/edr
+    command: sh -c "apk add --no-cache procps net-tools && npm install && (HOST_ID=hospital-backend TARGET=http://monitor:9090/ingest/telemetry INTERVAL_MS=5000 WATCH_DIR=/app node /edr/agent.js &) && node src/index.js"
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  encryption:
+    platform: linux/amd64
+    image: node:18-alpine
+    container_name: hospital-encryption
+    working_dir: /app
+    networks:
+      - sdp-net
+    volumes:
+      - ./Encryption:/app
+      - encryption-data:/app/storage
+    command: sh -c "npm install && node server.js"
+    ports:
+      - "127.0.0.1:3001:3001"
+    restart: unless-stopped
+
+  iam:
+    platform: linux/amd64
+    image: node:18-alpine
+    container_name: hospital-iam
+    working_dir: /app
+    networks:
+      - sdp-net
+    environment:
+      JWT_SECRET: sdp_phase2_shared_secret_change_me
+      EDR_HOST_ID: hospital-iam
+      EDR_TARGET: http://monitor:9090/ingest/telemetry
+      TELEMETRY_HOST: monitor
+      TELEMETRY_PORT: 9090
+      RESPONSE_CONTROLLER_HOST: response-controller
+      RESPONSE_CONTROLLER_PORT: 4100
+    volumes:
+      - ./Hospital-Frontend/server:/app
+      - ./agents/real-edr:/edr
+    command: sh -c "apk add --no-cache procps net-tools && npm install && (HOST_ID=hospital-iam TARGET=http://monitor:9090/ingest/telemetry INTERVAL_MS=3000 WATCH_DIR=/app node /edr/agent.js &) && node index.js"
+    ports:
+      - "4000:4000"
+    restart: unless-stopped
+
+  sdp-controller:
+    platform: linux/amd64
+    image: node:18-alpine
+    container_name: hospital-sdp-controller
+    working_dir: /app
+    networks:
+      - sdp-net
+    ports:
+      - "127.0.0.1:7000:7000"
+    volumes:
+      - ./sdp-controller:/app
+    command: sh -c "npm install && node index.js"
+    restart: unless-stopped
+  api-gateway:
+    platform: linux/amd64
+    image: node:18-alpine
+    container_name: hospital-api-gateway
+    working_dir: /app
+    networks:
+      - sdp-net
+    environment:
+      PORT: 8080
+      JWT_SECRET: sdp_phase2_shared_secret_change_me
+      IAM_URL: http://iam:4000
+      BACKEND_URL: http://backend:3000
+      SDP_ENFORCEMENT: true
+      SDP_CONTROLLER_URL: http://sdp-controller:7000
+      SDP_FAIL_OPEN: false
+    volumes:
+      - ./api-gateway:/app
+    command: sh -c "npm install && node index.js"
+    ports:
+      - "8088:8080"
+    depends_on:
+      - sdp-controller
+      - iam
+      - backend
+    restart: unless-stopped
+
+  frontend:
+    platform: linux/amd64
+    image: node:18-alpine
+    container_name: hospital-frontend
+    working_dir: /app
+    networks:
+      - sdp-net
+    environment:
+      VITE_API_URL: http://localhost:8088
+      VITE_IAM_URL: http://localhost:8088
+      EDR_HOST_ID: hospital-frontend
+      EDR_TARGET: http://monitor:9090/ingest/telemetry
+    volumes:
+      - ./Hospital-Frontend:/app
+      - ./agents/real-edr:/edr
+    command: sh -c "apk add --no-cache procps net-tools && npm install && (HOST_ID=hospital-frontend TARGET=http://monitor:9090/ingest/telemetry INTERVAL_MS=5000 WATCH_DIR=/app node /edr/agent.js &) && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api-gateway
+    restart: unless-stopped
+
+  monitor:
+    platform: linux/amd64
+    image: node:18-alpine
+    container_name: hospital-monitor
+    working_dir: /app
+    networks:
+      - sdp-net
+    volumes:
+      - ./monitoring:/app
+      - monitor-logs:/logs
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - CONTROLLER_URL=http://response-controller:4100/alert
+      - ML_ENGINE_URL=http://ml-engine:5000
+      - ML_ENABLED=true
+    command: sh -c "apk add --no-cache docker-cli && sleep 15 && node quick-demo.js & node traffic-analyzer.js & node metrics-exporter.js"
+    ports:
+      - "9090:9090"
+    depends_on:
+      - db
+      - backend
+      - frontend
+      - iam
+      - encryption
+      - api-gateway
+    restart: unless-stopped
+
+  prometheus:
+    platform: linux/amd64
+    image: prom/prometheus:latest
+    container_name: hospital-prometheus
+    networks:
+      - sdp-net
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.listen-address=:9091'
+    ports:
+      - "9091:9091"
+    depends_on:
+      - monitor
+    restart: unless-stopped
+
+  grafana:
+    platform: linux/amd64
+    image: grafana/grafana:latest
+    container_name: hospital-grafana
+    networks:
+      - sdp-net
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3002
+    ports:
+      - "3002:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  response-controller:
+    platform: linux/amd64
+    image: node:18-alpine
+    container_name: hospital-response-controller
+    working_dir: /app
+    networks:
+      - sdp-net
+    volumes:
+      - ./response/controller:/app
+      - monitor-logs:/logs
+    command: sh -c "npm install && node index.js"
+    ports:
+      - "4100:4100"
+    environment:
+      - PORT=4100
+      - IAM_HOST=iam
+      - IAM_PORT=4000
+    depends_on:
+      - monitor
+    restart: unless-stopped
+
+  ml-engine:
+    platform: linux/amd64
+    build:
+      context: ./ml-engine
+      dockerfile: Dockerfile
+    container_name: hospital-ml-engine
+    working_dir: /app
+    networks:
+      - sdp-net
+    volumes:
+      - ./ml-engine/models:/app/models
+      - ./ml-engine/data:/app/data:ro
+    environment:
+      - ML_PORT=5000
+    ports:
+      - "5000:5000"
+    depends_on:
+      - monitor
+    restart: unless-stopped
+
+  edr-admin:
+    platform: linux/amd64
+    image: node:18-alpine
+    container_name: edr-admin-workstation
+    working_dir: /edr
+    networks:
+      - sdp-net
+    volumes:
+      - ./agents/real-edr:/edr
+    environment:
+      - HOST_ID=admin-workstation
+      - USER_ROLE=admin
+      - USER_EMAIL=admin@hospital.com
+      - TARGET=http://monitor:9090/ingest/telemetry
+      - INTERVAL_MS=3000
+      - WATCH_DIR=/tmp
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=hospital
+      - DB_PASSWORD=F1UFDk8H36Ry2RITAvnErulW
+      - DB_NAME=hospital_db
+    command: sh -c "apk add --no-cache procps net-tools && npm install --production 2>/dev/null && node agent.js"
+    depends_on:
+      - monitor
+      - db
+    restart: unless-stopped
+
+  edr-doctor:
+    platform: linux/amd64
+    image: node:18-alpine
+    container_name: edr-doctor-workstation
+    working_dir: /edr
+    networks:
+      - sdp-net
+    volumes:
+      - ./agents/real-edr:/edr
+    environment:
+      - HOST_ID=doctor-workstation
+      - USER_ROLE=doctor
+      - USER_EMAIL=doctor@hospital.com
+      - TARGET=http://monitor:9090/ingest/telemetry
+      - INTERVAL_MS=2000
+      - WATCH_DIR=/tmp
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=hospital
+      - DB_PASSWORD=F1UFDk8H36Ry2RITAvnErulW
+      - DB_NAME=hospital_db
+    command: sh -c "apk add --no-cache procps net-tools && npm install --production 2>/dev/null && node agent.js"
+    depends_on:
+      - monitor
+      - db
+    restart: unless-stopped
+
+  edr-nurse:
+    platform: linux/amd64
+    image: node:18-alpine
+    container_name: edr-nurse-workstation
+    working_dir: /edr
+    networks:
+      - sdp-net
+    volumes:
+      - ./agents/real-edr:/edr
+    environment:
+      - HOST_ID=nurse-workstation
+      - USER_ROLE=nurse
+      - USER_EMAIL=nurse@hospital.com
+      - TARGET=http://monitor:9090/ingest/telemetry
+      - INTERVAL_MS=3000
+      - WATCH_DIR=/tmp
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=hospital
+      - DB_PASSWORD=F1UFDk8H36Ry2RITAvnErulW
+      - DB_NAME=hospital_db
+    command: sh -c "apk add --no-cache procps net-tools && npm install --production 2>/dev/null && node agent.js"
+    depends_on:
+      - monitor
+      - db
+    restart: unless-stopped
+
+  edr-receptionist:
+    platform: linux/amd64
+    image: node:18-alpine
+    container_name: edr-receptionist-workstation
+    working_dir: /edr
+    networks:
+      - sdp-net
+    volumes:
+      - ./agents/real-edr:/edr
+    environment:
+      - HOST_ID=receptionist-workstation
+      - USER_ROLE=receptionist
+      - USER_EMAIL=receptionist@hospital.com
+      - TARGET=http://monitor:9090/ingest/telemetry
+      - INTERVAL_MS=3000
+      - WATCH_DIR=/tmp
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=hospital
+      - DB_PASSWORD=F1UFDk8H36Ry2RITAvnErulW
+      - DB_NAME=hospital_db
+    command: sh -c "apk add --no-cache procps net-tools && npm install --production 2>/dev/null && node agent.js"
+    depends_on:
+      - monitor
+      - db
+    restart: unless-stopped
+
+  edr-lab-technician:
+    platform: linux/amd64
+    image: node:18-alpine
+    container_name: edr-labtech-workstation
+    working_dir: /edr
+    networks:
+      - sdp-net
+    volumes:
+      - ./agents/real-edr:/edr
+    environment:
+      - HOST_ID=labtech-workstation
+      - USER_ROLE=lab_technician
+      - USER_EMAIL=labtech@hospital.com
+      - TARGET=http://monitor:9090/ingest/telemetry
+      - INTERVAL_MS=4000
+      - WATCH_DIR=/tmp
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=hospital
+      - DB_PASSWORD=F1UFDk8H36Ry2RITAvnErulW
+      - DB_NAME=hospital_db
+    command: sh -c "apk add --no-cache procps net-tools && npm install --production 2>/dev/null && node agent.js"
+    depends_on:
+      - monitor
+      - db
+    restart: unless-stopped
+
+  edr-pharmacist:
+    platform: linux/amd64
+    image: node:18-alpine
+    container_name: edr-pharmacist-workstation
+    working_dir: /edr
+    networks:
+      - sdp-net
+    volumes:
+      - ./agents/real-edr:/edr
+    environment:
+      - HOST_ID=pharmacist-workstation
+      - USER_ROLE=pharmacist
+      - USER_EMAIL=pharmacist@hospital.com
+      - TARGET=http://monitor:9090/ingest/telemetry
+      - INTERVAL_MS=4000
+      - WATCH_DIR=/tmp
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=hospital
+      - DB_PASSWORD=F1UFDk8H36Ry2RITAvnErulW
+      - DB_NAME=hospital_db
+    command: sh -c "apk add --no-cache procps net-tools && npm install --production 2>/dev/null && node agent.js"
+    depends_on:
+      - monitor
+      - db
+    restart: unless-stopped
+
+  edr-accountant:
+    platform: linux/amd64
+    image: node:18-alpine
+    container_name: edr-accountant-workstation
+    working_dir: /edr
+    networks:
+      - sdp-net
+    volumes:
+      - ./agents/real-edr:/edr
+    environment:
+      - HOST_ID=accountant-workstation
+      - USER_ROLE=accountant
+      - USER_EMAIL=accountant@hospital.com
+      - TARGET=http://monitor:9090/ingest/telemetry
+      - INTERVAL_MS=5000
+      - WATCH_DIR=/tmp
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=hospital
+      - DB_PASSWORD=F1UFDk8H36Ry2RITAvnErulW
+      - DB_NAME=hospital_db
+    command: sh -c "apk add --no-cache procps net-tools && npm install --production 2>/dev/null && node agent.js"
+    depends_on:
+      - monitor
+      - db
+    restart: unless-stopped
+
+  edr-patient:
+    platform: linux/amd64
+    image: node:18-alpine
+    container_name: edr-patient-terminal
+    working_dir: /edr
+    networks:
+      - sdp-net
+    volumes:
+      - ./agents/real-edr:/edr
+    environment:
+      - HOST_ID=patient-terminal
+      - USER_ROLE=patient
+      - USER_EMAIL=patient@hospital.com
+      - TARGET=http://monitor:9090/ingest/telemetry
+      - INTERVAL_MS=5000
+      - WATCH_DIR=/tmp
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=hospital
+      - DB_PASSWORD=F1UFDk8H36Ry2RITAvnErulW
+      - DB_NAME=hospital_db
+    command: sh -c "apk add --no-cache procps net-tools && npm install --production 2>/dev/null && node agent.js"
+    depends_on:
+      - monitor
+      - db
+    restart: unless-stopped
+
+volumes:
+  db-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ../../docker-volumes/db-data
+
+  encryption-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ../../docker-volumes/encryption-data
+
+  monitor-logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ../../docker-volumes/monitor-logs
+
+  prometheus-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ../../docker-volumes/prometheus-data
+
+  grafana-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ../../docker-volumes/grafana-data
+
+
+

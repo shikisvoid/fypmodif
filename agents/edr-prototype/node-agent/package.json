@@ -1,0 +1,11 @@
+{
+  "name": "edr-prototype",
+  "version": "0.1.0",
+  "description": "Simple EDR prototype agent that sends simulated telemetry to the monitoring ingest endpoint",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Phase2",
+  "license": "MIT"
+}

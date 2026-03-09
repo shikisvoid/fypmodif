@@ -1,0 +1,293 @@
+/* Minimal custom styles to complement Tailwind CDN */
+html, body, #root { height: 100%; }
+body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+
+/* Small utility to limit wide tables on small screens */
+.table-wrap { overflow-x: auto; }
+
+/* Design tokens for presentation */
+:root {
+	--bg-900: #0b1020;
+	--bg-800: #0f1724;
+	--brand-500: #2563eb; /* blue-600 */
+	--brand-600: #1d4ed8;
+	--accent-start: #0ea5e9; /* sky-500 */
+	--accent-end: #4f46e5; /* indigo-600 */
+	--card-bg: rgba(255,255,255,0.04);
+	--muted: rgba(230,238,248,0.6);
+	--text: #e6eef8;
+	--glass: rgba(255,255,255,0.02);
+	--radius: 12px;
+}
+
+.app-shell { 
+	min-height:100vh; 
+	background: 
+		linear-gradient(180deg, rgba(6,8,15,0.7) 0%, rgba(12,15,29,0.8) 100%),
+		url('/src/assets/hospital portal ui bgm.jpg') center/cover no-repeat;
+	color: var(--text);
+	background-attachment: fixed;
+	position: relative;
+	display: flex;
+	flex-direction: row;
+}
+
+.sidebar { 
+	width: 260px; 
+	background: linear-gradient(180deg, rgba(6,8,15,0.9), rgba(10,12,25,0.95)); 
+	border-right: 1px solid rgba(255,255,255,0.03);
+	transition: transform 0.3s ease, opacity 0.3s ease;
+	display: flex;
+	flex-direction: column;
+}
+
+/* Responsive Sidebar - Mobile Hamburger Menu */
+.sidebar-open {
+	transform: translateX(0);
+	opacity: 1;
+	pointer-events: auto;
+	position: static;
+	height: auto;
+	z-index: auto;
+}
+
+.sidebar-closed {
+	transform: translateX(-100%);
+	opacity: 0;
+	pointer-events: none;
+	position: fixed;
+	left: 0;
+	top: 0;
+	height: 100vh;
+	z-index: 40;
+	width: 260px;
+}
+
+/* On medium screens and up, always show sidebar */
+@media (min-width: 768px) {
+	.sidebar {
+		transform: translateX(0) !important;
+		opacity: 1 !important;
+		pointer-events: auto !important;
+		position: static !important;
+		height: auto !important;
+		z-index: auto !important;
+		display: flex !important;
+	}
+
+	.sidebar-closed {
+		position: static !important;
+		transform: translateX(0) !important;
+		opacity: 1 !important;
+		pointer-events: auto !important;
+		height: auto !important;
+		z-index: auto !important;
+	}
+
+	.app-shell {
+		flex-direction: row;
+	}
+
+	main {
+		flex: 1;
+	}
+}
+
+/* Mobile view - sidebar is overlay */
+@media (max-width: 767px) {
+	.app-shell {
+		flex-direction: column;
+		position: relative;
+	}
+
+	.sidebar-open {
+		position: fixed;
+		height: 100vh;
+		top: 0;
+		left: 0;
+		box-shadow: 2px 0 8px rgba(0,0,0,0.3);
+	}
+
+	main {
+		flex: 1;
+		width: 100%;
+	}
+
+	/* Overlay effect when sidebar is open */
+	.sidebar-open ~ main {
+		pointer-events: none;
+		opacity: 0.5;
+	}
+}
+
+.brand { display:flex; align-items:center; gap:12px; padding:20px; }
+.brand .logo, .logo { width:44px; height:44px; background: linear-gradient(135deg,var(--accent-start),var(--accent-end)); border-radius:10px; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; }
+.sidebar .nav-item { padding:12px 18px; display:flex; align-items:center; gap:10px; color:rgba(230,238,248,0.85); }
+.sidebar .nav-item.active { background: linear-gradient(90deg, rgba(37,99,235,0.12), transparent); border-left:3px solid var(--brand-500); }
+.topbar { background: linear-gradient(90deg, rgba(255,255,255,0.02), transparent); border-bottom: 1px solid rgba(255,255,255,0.03); }
+.card-gradient { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border: 1px solid rgba(255,255,255,0.03); color: var(--text); }
+.card { background: var(--card-bg); border-radius: var(--radius); padding: 1rem; box-shadow: 0 6px 18px rgba(2,6,23,0.6); }
+.card-strong { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border: 1px solid rgba(255,255,255,0.04); box-shadow: 0 10px 30px rgba(2,6,23,0.7); }
+.stat-number { font-size:1.75rem; font-weight:700; color:#e6eef8 }
+.activity-item { padding:10px; border-radius:8px; background: rgba(255,255,255,0.01); display:flex; gap:12px; align-items:flex-start }
+.muted { color: var(--muted); }
+
+/* Accent utility */
+.accent { color: var(--accent-start); }
+
+/* Table tweaks for dark theme */
+table thead { color: rgba(255,255,255,0.85); }
+table tbody td { color: rgba(230,238,248,0.92); }
+
+.logo { font-weight:700; }
+
+/* Accessibility: focus-visible styles */
+button:focus-visible, input:focus-visible, a:focus-visible {
+	outline: 3px solid rgba(37,99,235,0.35);
+	outline-offset: 2px;
+}
+
+/* Light theme overrides: toggled by adding `light` class on <html> */
+:root.light {
+    --bg-900: #ffffff;
+    --bg-800: #f3f4f6;
+    --brand-500: #2563eb;
+    --accent-start: #059669;
+    --accent-end: #2563eb;
+    --card-bg: #ffffff;
+    --muted: #6b7280;
+    --text: #1f2937;
+    --glass: rgba(255,255,255,0.5);
+}
+
+:root.light * { color-scheme: light; }
+:root.light body { 
+	background: 
+		linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(249,250,251,0.9) 100%);
+	background-attachment: fixed;
+}
+:root.light .app-shell { 
+	background: 
+		linear-gradient(180deg, rgba(255,255,255,0.85) 0%, rgba(243,244,246,0.85) 100%),
+		url('/src/assets/hospital portal ui bgm.jpg') center/cover no-repeat;
+	color: var(--text);
+	background-attachment: fixed;
+}
+:root.light .sidebar { background: linear-gradient(180deg, #f3f4f6, #e5e7eb); border-right-color: #d1d5db; }
+:root.light .sidebar .brand { color: var(--text); }
+:root.light .sidebar .nav-item { color: #374151; }
+:root.light .sidebar .nav-item:hover { background-color: rgba(37,99,235,0.1); }
+:root.light .sidebar .nav-item.active { background-color: rgba(37,99,235,0.15); border-left-color: #2563eb; }
+:root.light .topbar { background: linear-gradient(90deg, #ffffff, #f9fafb); border-bottom-color: #e5e7eb; }
+:root.light .card { background: #ffffff; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1); color: var(--text); }
+:root.light .card-gradient { background: linear-gradient(180deg, #ffffff, #f9fafb); border-color: #e5e7eb; color: var(--text); }
+:root.light .card-strong { background: linear-gradient(180deg, #ffffff, #f9fafb); border: 1px solid #e5e7eb; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+:root.light table { color: var(--text); }
+:root.light table thead { background-color: #f3f4f6; }
+:root.light table tbody tr:hover { background-color: #f9fafb; }
+:root.light input, :root.light textarea, :root.light select { background-color: #f9fafb; border-color: #d1d5db; color: var(--text); }
+:root.light input:focus, :root.light textarea:focus, :root.light select:focus { background-color: #ffffff; border-color: #2563eb; }
+:root.light button { color: inherit; }
+:root.light .badge { background-color: #e5e7eb; color: #1f2937; }
+:root.light .badge-success { background-color: #dcfce7; color: #166534; }
+:root.light .badge-warning { background-color: #fef3c7; color: #b45309; }
+:root.light .badge-error { background-color: #fee2e2; color: #991b1b; }
+:root.light .badge-info { background-color: #dbeafe; color: #1e40af; }
+:root.light .muted { color: var(--muted); }
+:root.light .stat-number { color: var(--text); }
+:root.light h1, :root.light h2, :root.light h3, :root.light h4 { color: var(--text); }
+
+/* Slightly friendlier focus for light mode */
+:root.light button:focus-visible, :root.light input:focus-visible, :root.light a:focus-visible {
+    outline: 3px solid rgba(37,99,235,0.18);
+    outline-offset: 2px;
+}
+
+/* Smooth transitions for theme changes */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Enhanced button styling */
+button {
+    cursor: pointer;
+    font-weight: 500;
+    border: none;
+}
+
+button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Input field enhancements */
+input, textarea, select {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: var(--brand-500);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+
+/* Table row hover effects */
+table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+table tbody tr:hover {
+    background-color: rgba(37,99,235,0.05);
+}
+
+/* Status badge styling */
+.badge {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.badge-success {
+    background-color: rgba(16,185,129,0.1);
+    color: #10b981;
+}
+
+.badge-warning {
+    background-color: rgba(245,158,11,0.1);
+    color: #f59e0b;
+}
+
+.badge-error {
+    background-color: rgba(239,68,68,0.1);
+    color: #ef4444;
+}
+
+.badge-info {
+    background-color: rgba(59,130,246,0.1);
+    color: #3b82f6;
+}
+
+/* Typography improvements */
+h1 { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+h2 { font-size: 1.875rem; font-weight: 600; line-height: 1.25; }
+h3 { font-size: 1.5rem; font-weight: 600; line-height: 1.33; }
+h4 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
+
+p { line-height: 1.6; }
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.25rem; }
+    h3 { font-size: 1.125rem; }
+}

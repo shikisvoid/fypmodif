@@ -1,0 +1,148 @@
+﻿{
+  "title": "SDP Live Demo",
+  "tags": ["network", "security", "SDP", "demo"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "5s",
+  "uid": "sdp-live-demo",
+  "editable": true,
+  "time": {"from": "now-5m", "to": "now"},
+  "panels": [
+    {
+      "id": 1,
+      "title": "Security Score",
+      "type": "gauge",
+      "gridPos": {"x": 0, "y": 0, "w": 6, "h": 6},
+      "targets": [{"expr": "network_security_score", "refId": "A"}],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "red"},
+              {"value": 70, "color": "yellow"},
+              {"value": 90, "color": "green"}
+            ]
+          },
+          "unit": "percent"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Test Pass Rate",
+      "type": "gauge",
+      "gridPos": {"x": 6, "y": 0, "w": 6, "h": 6},
+      "targets": [{"expr": "network_isolation_pass_rate", "refId": "A"}],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "red"},
+              {"value": 80, "color": "yellow"},
+              {"value": 95, "color": "green"}
+            ]
+          },
+          "unit": "percent"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Security Violations",
+      "type": "stat",
+      "gridPos": {"x": 12, "y": 0, "w": 6, "h": 6},
+      "targets": [{"expr": "network_security_violations", "refId": "A"}],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "green"},
+              {"value": 1, "color": "red"}
+            ]
+          }
+        }
+      },
+      "options": {"colorMode": "background"}
+    },
+    {
+      "id": 4,
+      "title": "Total Tests",
+      "type": "stat",
+      "gridPos": {"x": 18, "y": 0, "w": 6, "h": 6},
+      "targets": [{"expr": "network_isolation_tests_total", "refId": "A"}],
+      "options": {"graphMode": "area"}
+    },
+    {
+      "id": 5,
+      "title": "Passed vs Failed Tests",
+      "type": "timeseries",
+      "gridPos": {"x": 0, "y": 6, "w": 12, "h": 8},
+      "targets": [
+        {"expr": "network_isolation_tests_passed", "legendFormat": "Passed", "refId": "A"},
+        {"expr": "network_isolation_tests_failed", "legendFormat": "Failed", "refId": "B"}
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Network Traffic: Allowed vs Blocked",
+      "type": "timeseries",
+      "gridPos": {"x": 12, "y": 6, "w": 12, "h": 8},
+      "targets": [
+        {"expr": "network_allowed_connections", "legendFormat": "Allowed", "refId": "A"},
+        {"expr": "network_blocked_attempts", "legendFormat": "Blocked", "refId": "B"}
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Blocked Attempts (SDP Working)",
+      "type": "stat",
+      "gridPos": {"x": 0, "y": 14, "w": 8, "h": 4},
+      "targets": [{"expr": "network_blocked_attempts", "refId": "A"}],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"value": 0, "color": "orange"},
+              {"value": 1, "color": "green"}
+            ]
+          }
+        }
+      },
+      "options": {"graphMode": "area", "colorMode": "value"}
+    },
+    {
+      "id": 8,
+      "title": "Allowed Connections",
+      "type": "stat",
+      "gridPos": {"x": 8, "y": 14, "w": 8, "h": 4},
+      "targets": [{"expr": "network_allowed_connections", "refId": "A"}],
+      "options": {"graphMode": "area", "colorMode": "value"}
+    },
+    {
+      "id": 9,
+      "title": "Tests Passed",
+      "type": "stat",
+      "gridPos": {"x": 16, "y": 14, "w": 8, "h": 4},
+      "targets": [{"expr": "network_isolation_tests_passed", "refId": "A"}],
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "fixed", "fixedColor": "green"}
+        }
+      },
+      "options": {"graphMode": "area", "colorMode": "value"}
+    }
+  ]
+}
+
+
+

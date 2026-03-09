@@ -1,0 +1,49 @@
+{
+  "version": "2026-03-09.1",
+  "adminBypass": true,
+  "defaultDecision": "allow",
+  "publicPaths": [
+    "/api/login",
+    "/api/mfa",
+    "/api/token",
+    "/api/logout",
+    "/api/me",
+    "/api/admin/mfa/secret",
+    "/api/security/revoke-user",
+    "/api/security/block-ip",
+    "/api/health",
+    "/api/monitoring/health"
+  ],
+  "pathRules": [
+    {
+      "prefix": "/api/monitoring",
+      "requiredPermission": "canViewReports",
+      "allowedRoles": ["admin"]
+    },
+    {
+      "prefix": "/api/admin",
+      "requiredPermission": "canManageUsers",
+      "allowedRoles": ["admin"]
+    },
+    {
+      "prefix": "/api/lab",
+      "requiredPermission": "canViewLabs",
+      "allowedRoles": ["admin", "doctor", "lab_technician"]
+    },
+    {
+      "prefix": "/api/pharmacy",
+      "requiredPermission": "canViewPharmacy",
+      "allowedRoles": ["admin", "doctor", "pharmacist", "nurse"]
+    },
+    {
+      "prefix": "/api/billing",
+      "requiredPermission": "canViewBilling",
+      "allowedRoles": ["admin", "accountant"]
+    },
+    {
+      "prefix": "/api/files",
+      "requiredPermission": "canViewPatientFiles",
+      "allowedRoles": ["admin", "doctor", "nurse"]
+    }
+  ]
+}

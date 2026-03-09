@@ -1,0 +1,14 @@
+{
+  "patients": [
+    { "id": 1, "name": "Alice Brown", "age": 45, "condition": "Hypertension", "lastVisit": "2025-11-15" },
+    { "id": 2, "name": "Bob Wilson", "age": 62, "condition": "Diabetes Type 2", "lastVisit": "2025-11-14" },
+    { "id": 3, "name": "Carol Davis", "age": 38, "condition": "Asthma", "lastVisit": "2025-11-16" },
+    { "id": 4, "name": "David Lee", "age": 55, "condition": "Arthritis", "lastVisit": "2025-11-10" }
+  ],
+  "appointments": [
+    { "id": 1, "patient": "Alice Brown", "doctor": "Dr. John Smith", "date": "2025-11-20", "time": "10:00 AM", "status": "Scheduled" },
+    { "id": 2, "patient": "Bob Wilson", "doctor": "Dr. Sarah Admin", "date": "2025-11-20", "time": "11:30 AM", "status": "Scheduled" },
+    { "id": 3, "patient": "Carol Davis", "doctor": "Dr. John Smith", "date": "2025-11-21", "time": "09:00 AM", "status": "Scheduled" },
+    { "id": 4, "patient": "David Lee", "doctor": "Dr. Sarah Admin", "date": "2025-11-19", "time": "02:00 PM", "status": "Completed" }
+  ]
+}

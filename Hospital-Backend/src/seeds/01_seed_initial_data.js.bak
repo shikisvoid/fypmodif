@@ -1,0 +1,257 @@
+/**
+ * src/seeds/01_seed_initial_data.js
+ * Seed database with sample data and hashed passwords for JWT authentication
+ */
+
+const bcrypt = require('bcryptjs');
+
+exports.seed = async function(knex) {
+  // Truncate all tables in correct order (reverse dependencies)
+  await knex('audit_logs').del();
+  await knex('files').del();
+  await knex('vitals').del();
+  await knex('prescriptions').del();
+  await knex('lab_tests').del();
+  await knex('appointments').del();
+  await knex('patients').del();
+  await knex('users').del();
+
+  // Hash passwords synchronously for seeding (in real app, validate input and hash on registration)
+  const adminHash = await bcrypt.hash('admin123', 10);
+  const doctorHash = await bcrypt.hash('doctor123', 10);
+  const nurseHash = await bcrypt.hash('nurse123', 10);
+  const receptionistHash = await bcrypt.hash('reception123', 10);
+
+  // Seed users with hashed passwords matching frontend demo
+  const users = await knex('users').insert([
+    {
+      external_id: 'adm-sarah',
+      name: 'Dr. Sarah Admin',
+      email: 'admin@hospital.com',
+      role: 'admin',
+      mfa_enabled: true,
+      mfa_secret: 'JBSWY3DPEHPK3PXP',
+      password_hash: adminHash
+    },
+    {
+      external_id: 'doc-john',
+      name: 'Dr. John Smith',
+      email: 'doctor@hospital.com',
+      role: 'doctor',
+      mfa_enabled: true,
+      mfa_secret: 'JBSWY3DPEHPK3PXQ',
+      password_hash: doctorHash
+    },
+    {
+      external_id: 'nur-emily',
+      name: 'Nurse Emily Johnson',
+      email: 'nurse@hospital.com',
+      role: 'nurse',
+      mfa_enabled: true,
+      mfa_secret: 'JBSWY3DPEHPK3PXR',
+      password_hash: nurseHash
+    },
+    {
+      external_id: 'rec-mike',
+      name: 'Mike Reception',
+      email: 'receptionist@hospital.com',
+      role: 'receptionist',
+      mfa_enabled: true,
+      mfa_secret: 'JBSWY3DPEHPK3PXS',
+      password_hash: receptionistHash
+    }
+  ]).returning('*');
+
+  // Seed patients (from frontend data.json synchronized)
+  const patients = await knex('patients').insert([
+    {
+      mrn: 'MRN001',
+      first_name: 'Alice',
+      last_name: 'Brown',
+      dob: '1980-05-15',
+      gender: 'Female',
+      contact: JSON.stringify({
+        phone: '+1-555-0001',
+        email: 'alice@example.com',
+        address: '123 Main St, Springfield, IL'
+      }),
+      insurance: JSON.stringify({
+        provider: 'Blue Cross',
+        policy_number: 'BC-123456'
+      }),
+      allergies: JSON.stringify([
+        'Penicillin'
+      ]),
+      medical_history: JSON.stringify({
+        conditions: ['Hypertension'],
+        surgeries: []
+      })
+    },
+    {
+      mrn: 'MRN002',
+      first_name: 'Bob',
+      last_name: 'Wilson',
+      dob: '1963-03-22',
+      gender: 'Male',
+      contact: JSON.stringify({
+        phone: '+1-555-0002',
+        email: 'bob@example.com',
+        address: '456 Oak Ave, Springfield, IL'
+      }),
+      insurance: JSON.stringify({
+        provider: 'Aetna',
+        policy_number: 'AE-789012'
+      }),
+      allergies: null,
+      medical_history: JSON.stringify({
+        conditions: ['Diabetes Type 2'],
+        surgeries: []
+      })
+    },
+    {
+      mrn: 'MRN003',
+      first_name: 'Carol',
+      last_name: 'Davis',
+      dob: '1987-08-10',
+      gender: 'Female',
+      contact: JSON.stringify({
+        phone: '+1-555-0003',
+        email: 'carol@example.com',
+        address: '789 Elm St, Springfield, IL'
+      }),
+      insurance: JSON.stringify({
+        provider: 'United Health',
+        policy_number: 'UH-345678'
+      }),
+      allergies: JSON.stringify([
+        'Aspirin'
+      ]),
+      medical_history: JSON.stringify({
+        conditions: ['Asthma'],
+        surgeries: []
+      })
+    },
+    {
+      mrn: 'MRN004',
+      first_name: 'David',
+      last_name: 'Lee',
+      dob: '1970-12-03',
+      gender: 'Male',
+      contact: JSON.stringify({
+        phone: '+1-555-0004',
+        email: 'david@example.com',
+        address: '321 Pine Rd, Springfield, IL'
+      }),
+      insurance: JSON.stringify({
+        provider: 'Cigna',
+        policy_number: 'CG-901234'
+      }),
+      allergies: null,
+      medical_history: JSON.stringify({
+        conditions: ['Arthritis'],
+        surgeries: ['Knee replacement 2020']
+      }),
+      emergency_contact: JSON.stringify({
+        name: 'Susan Lee',
+        relation: 'Wife',
+        phone: '+1-555-0005'
+      })
+    }
+  ]).returning('*');
+
+  // Seed appointments (from frontend data.json synchronized)
+  await knex('appointments').insert([
+    {
+      patient_id: patients[0].id,
+      doctor_id: users[1].id, // doctor@hospital.com
+      scheduled_at: new Date('2025-11-20T10:00:00Z'),
+      status: 'scheduled',
+      appointment_type: 'consultation',
+      notes: 'Follow-up for hypertension'
+    },
+    {
+      patient_id: patients[1].id,
+      doctor_id: users[0].id, // admin@hospital.com
+      scheduled_at: new Date('2025-11-20T11:30:00Z'),
+      status: 'scheduled',
+      appointment_type: 'consultation',
+      notes: 'Diabetes management review'
+    },
+    {
+      patient_id: patients[2].id,
+      doctor_id: users[1].id, // doctor@hospital.com
+      scheduled_at: new Date('2025-11-21T09:00:00Z'),
+      status: 'scheduled',
+      appointment_type: 'consultation',
+      notes: 'Asthma assessment'
+    },
+    {
+      patient_id: patients[3].id,
+      doctor_id: users[0].id, // admin@hospital.com
+      scheduled_at: new Date('2025-11-19T14:00:00Z'),
+      status: 'completed',
+      appointment_type: 'follow-up',
+      notes: 'Post-treatment check'
+    }
+  ]);
+
+  // Seed vitals
+  await knex('vitals').insert([
+    {
+      patient_id: patients[0].id,
+      recorded_by: users[2].id, // nurse
+      recorded_at: new Date('2025-11-15T10:30:00Z'),
+      metrics: JSON.stringify({
+        bp_systolic: 145,
+        bp_diastolic: 92,
+        heart_rate: 72,
+        temperature: 98.6,
+        weight: 160,
+        height: 65
+      })
+    },
+    {
+      patient_id: patients[1].id,
+      recorded_by: users[2].id, // nurse
+      recorded_at: new Date('2025-11-14T14:00:00Z'),
+      metrics: JSON.stringify({
+        bp_systolic: 135,
+        bp_diastolic: 88,
+        heart_rate: 68,
+        temperature: 98.4,
+        weight: 185,
+        height: 71
+      })
+    }
+  ]);
+
+  // Seed lab tests
+  await knex('lab_tests').insert([
+    {
+      patient_id: patients[0].id,
+      requested_by: users[1].id, // doctor
+      test_name: 'Blood Pressure Monitoring',
+      status: 'completed',
+      result_data: JSON.stringify({
+        systolic: 145,
+        diastolic: 92,
+        status: 'elevated'
+      }),
+      completed_at: new Date('2025-11-15T11:00:00Z')
+    },
+    {
+      patient_id: patients[1].id,
+      requested_by: users[1].id, // doctor
+      test_name: 'Fasting Blood Glucose',
+      status: 'completed',
+      result_data: JSON.stringify({
+        value: 186,
+        unit: 'mg/dL',
+        status: 'elevated'
+      }),
+      completed_at: new Date('2025-11-14T15:00:00Z')
+    }
+  ]);
+
+  console.log('✓ Database seeded with hashed passwords and synchronized data');
+};

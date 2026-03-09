@@ -1,0 +1,55 @@
+﻿# Prometheus Configuration for Hospital Network Monitoring
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'hospital-sdp'
+    environment: 'production'
+
+# Scrape configurations
+scrape_configs:
+  # Network monitoring metrics
+  - job_name: 'network-monitoring'
+    static_configs:
+      - targets: ['hospital-monitor:9090']
+        labels:
+          service: 'network-monitor'
+          network: 'both'
+
+  # Backend services
+  - job_name: 'backend-services'
+    static_configs:
+      - targets: ['hospital-backend:3000']
+        labels:
+          service: 'backend-api'
+          network: 'sdp'
+      - targets: ['hospital-db:5432']
+        labels:
+          service: 'database'
+          network: 'sdp'
+      - targets: ['hospital-encryption:3001']
+        labels:
+          service: 'encryption'
+          network: 'sdp'
+
+  # Frontend services
+  - job_name: 'frontend-services'
+    static_configs:
+      - targets: ['hospital-frontend:5173']
+        labels:
+          service: 'frontend'
+          network: 'sdp'
+      - targets: ['hospital-iam:4000']
+        labels:
+          service: 'iam'
+          network: 'sdp'
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9091']
+        labels:
+          service: 'prometheus'
+
+

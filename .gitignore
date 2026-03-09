@@ -1,0 +1,7 @@
+*.pkl
+*.h5
+*.pt
+*.joblib
+__pycache__/
+.env
+node_modules/

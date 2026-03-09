@@ -1,0 +1,4 @@
+patient name: harini
+age : 25
+diagnosis : supertension
+medication : amlodiphine

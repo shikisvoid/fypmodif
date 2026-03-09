@@ -1,0 +1,16 @@
+{
+  "model": "Random Forest",
+  "rf_threshold": 0.11,
+  "precision": 0.738,
+  "recall": 0.953,
+  "f1_score": 0.8318,
+  "roc_auc": 0.9871,
+  "false_positive_rate": 0.0843,
+  "true_positives": 42766,
+  "true_negatives": 164944,
+  "false_positives": 15183,
+  "false_negatives": 2107,
+  "test_samples": 225000,
+  "attack_recall_pct": 95.3,
+  "benign_correct_pct": 91.57
+}

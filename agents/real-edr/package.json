@@ -1,0 +1,13 @@
+{
+  "name": "real-edr-agent",
+  "version": "1.0.0",
+  "description": "Real EDR agent that collects actual system telemetry",
+  "main": "agent.js",
+  "scripts": {
+    "start": "node agent.js"
+  },
+  "dependencies": {
+    "pg": "^8.11.3"
+  }
+}
+

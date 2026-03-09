@@ -1,0 +1,86 @@
+{
+  "admin@hospital.com": {
+    "password": "$2a$10$FI5Pma228smY477PzhEc5eqsYMysF1WOzmv1nLyhYvU1ZXgdxCFli",
+    "role": "admin",
+    "name": "Dr. Sarah Admin",
+    "mfaEnabled": true,
+    "mfaSecret": "PVSU22Z3OBIWIZKXF52GWNDHLJJUMMSJKJJFI7L2IVAS44CJF42Q"
+  },
+  "doctor@hospital.com": {
+    "password": "$2a$10$rekSSQLwlvZDkEjN0Y6OFO8Uu.17kyvTCFPnEvFRrr4n.8LK1s2Tq",
+    "role": "doctor",
+    "name": "Dr. John Smith",
+    "mfaEnabled": true,
+    "mfaSecret": "MU7EI4S3KI2SQKDWMEYCS4KEKBXHUNBMNUUUY5KLIQ3FQTJQKZ4Q"
+  },
+  "sherin_Dr@hospital.com": {
+    "password": "$2a$10$8TTw/Z2G2OYu84nOU6cnj.GrLjfanX9Y5h76sCLNFyf96Nr0dzSdq",
+    "role": "doctor",
+    "name": "Dr. Sherin Kumar",
+    "mfaEnabled": true,
+    "mfaSecret": "ABCD1234EFGH5678IJKL9012MNOP3456QRST7890UVWX"
+  },
+  "Toufeeq_Dr@hospital.com": {
+    "password": "$2a$10$8TTw/Z2G2OYu84nOU6cnj.GrLjfanX9Y5h76sCLNFyf96Nr0dzSdq",
+    "role": "doctor",
+    "name": "Dr. Toufeeq Ahmed",
+    "mfaEnabled": true,
+    "mfaSecret": "BCDE2345FGHI6789JKLM0123NOPQ4567RSTU8901VWXY"
+  },
+  "Varun_Dr@hospital.com": {
+    "password": "$2a$10$8TTw/Z2G2OYu84nOU6cnj.GrLjfanX9Y5h76sCLNFyf96Nr0dzSdq",
+    "role": "doctor",
+    "name": "Dr. Varun Reddy",
+    "mfaEnabled": true,
+    "mfaSecret": "CDEF3456GHIJ7890KLMN1234OPQR5678STUV9012WXYZ"
+  },
+  "Harini_Dr@hospital.com": {
+    "password": "$2a$10$8TTw/Z2G2OYu84nOU6cnj.GrLjfanX9Y5h76sCLNFyf96Nr0dzSdq",
+    "role": "doctor",
+    "name": "Dr. Harini Priya",
+    "mfaEnabled": true,
+    "mfaSecret": "DEFG4567HIJK8901LMNO2345PQRS6789TUVW0123XYZA"
+  },
+  "nurse@hospital.com": {
+    "password": "$2a$10$Bmcx4ENCKrvNdACiTzbVW.usN/4J5tXcdzYvTqeCOF7W5u2ECKc4q",
+    "role": "nurse",
+    "name": "Nurse Emily Johnson",
+    "mfaEnabled": true,
+    "mfaSecret": "IJ5HAYSCGB5S42CHGAXHS532MEZCY5L2OZESS4CRFRICGN2OHM4Q"
+  },
+  "receptionist@hospital.com": {
+    "password": "$2a$10$FTHsxDOzHOQERB4yMhi20OpEGAsNPyzqGitw6iYGJuaKWVS7MvcPG",
+    "role": "receptionist",
+    "name": "Mike Reception",
+    "mfaEnabled": true,
+    "mfaSecret": "ENXE2JCKKZXHOMJRMV2EEOTHINCDIYLOPJ6SYRDDIJUFOJD5PMZA"
+  },
+  "labtech@hospital.com": {
+    "password": "$2a$10$Hzjy.acJ1Zj8YNatU2RhEO.MqwvowzGx55fneDDvZjECJ551iu4eu",
+    "role": "lab_technician",
+    "name": "Lab Tech Rachel Wilson",
+    "mfaEnabled": true,
+    "mfaSecret": "MJSSSLCEHQ7XQ4JROY3TSJCUJJ5VCXKHNBWTCXS3MIUHA3JZJZOQ"
+  },
+  "pharmacist@hospital.com": {
+    "password": "$2a$10$PXVXuuZgy1PcjEO1DFKI0.wn9mVuzowTyhEv3/jPzOV6w1xZiO1sO",
+    "role": "pharmacist",
+    "name": "Pharmacist David Lee",
+    "mfaEnabled": true,
+    "mfaSecret": "MJMHSWBDJ5JWG4JKOY7UQTTLJ5SCUZSIK4ZEWQLDG5AGEJCYI5SQ"
+  },
+  "accountant@hospital.com": {
+    "password": "$2a$10$IVc9s4zYDM4jl1KmrQ.TRuINEUxpIyaRIo5wwsk.gcmbbn2JhB00K",
+    "role": "accountant",
+    "name": "Accountant Patricia Brown",
+    "mfaEnabled": true,
+    "mfaSecret": "IBSG27J4NN3HSZTQGY4SS2DMNRPEGJRZIJFW4423J5WDMUBFEVKA"
+  },
+  "patient@hospital.com": {
+    "password": "$2a$10$aE78ewDkD3fUhVy8gwtpq.BL9YYIqYXXj9/VKVEzaOyO7zZa8ej7a",
+    "role": "patient",
+    "name": "John Patient",
+    "mfaEnabled": true,
+    "mfaSecret": "PATIENT1234SECRETBASE32ENCODEDHASH12345678901234"
+  }
+}
