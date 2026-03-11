@@ -1,7 +1,7 @@
 # verify-sdp-policy.ps1
 $ErrorActionPreference = "Stop"
 
-$controllerUrl = "http://localhost:7000"
+$controllerUrl = "http://127.0.0.1:7000"
 $composeFile = "docker-compose.sdp.yml"
 
 function Wait-Http200 {

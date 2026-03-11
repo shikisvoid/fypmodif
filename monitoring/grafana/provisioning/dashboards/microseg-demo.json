@@ -36,7 +36,7 @@
       "title": "Test Pass Rate",
       "type": "gauge",
       "gridPos": {"x": 6, "y": 0, "w": 6, "h": 6},
-      "targets": [{"expr": "network_isolation_pass_rate", "refId": "A"}],
+      "targets": [{"expr": "sdp_policy_pass_rate", "refId": "A"}],
       "fieldConfig": {
         "defaults": {
           "min": 0,
@@ -77,7 +77,7 @@
       "title": "Total Tests",
       "type": "stat",
       "gridPos": {"x": 18, "y": 0, "w": 6, "h": 6},
-      "targets": [{"expr": "network_isolation_tests_total", "refId": "A"}],
+      "targets": [{"expr": "sdp_policy_tests_total", "refId": "A"}],
       "options": {"graphMode": "area"}
     },
     {
@@ -86,8 +86,8 @@
       "type": "timeseries",
       "gridPos": {"x": 0, "y": 6, "w": 12, "h": 8},
       "targets": [
-        {"expr": "network_isolation_tests_passed", "legendFormat": "Passed", "refId": "A"},
-        {"expr": "network_isolation_tests_failed", "legendFormat": "Failed", "refId": "B"}
+        {"expr": "sdp_policy_tests_passed", "legendFormat": "Passed", "refId": "A"},
+        {"expr": "sdp_policy_tests_failed", "legendFormat": "Failed", "refId": "B"}
       ]
     },
     {
@@ -102,18 +102,18 @@
     },
     {
       "id": 7,
-      "title": "Blocked Attempts (SDP Working)",
+      "title": "SDP Denied Requests",
       "type": "stat",
       "gridPos": {"x": 0, "y": 14, "w": 8, "h": 4},
-      "targets": [{"expr": "network_blocked_attempts", "refId": "A"}],
+      "targets": [{"expr": "sdp_policy_tests_failed", "refId": "A"}],
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "thresholds"},
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"value": 0, "color": "orange"},
-              {"value": 1, "color": "green"}
+              {"value": 0, "color": "green"},
+              {"value": 1, "color": "orange"}
             ]
           }
         }
@@ -122,10 +122,10 @@
     },
     {
       "id": 8,
-      "title": "Allowed Connections",
+      "title": "SDP Allowed Requests",
       "type": "stat",
       "gridPos": {"x": 8, "y": 14, "w": 8, "h": 4},
-      "targets": [{"expr": "network_allowed_connections", "refId": "A"}],
+      "targets": [{"expr": "sdp_policy_tests_passed", "refId": "A"}],
       "options": {"graphMode": "area", "colorMode": "value"}
     },
     {
@@ -133,7 +133,7 @@
       "title": "Tests Passed",
       "type": "stat",
       "gridPos": {"x": 16, "y": 14, "w": 8, "h": 4},
-      "targets": [{"expr": "network_isolation_tests_passed", "refId": "A"}],
+      "targets": [{"expr": "sdp_policy_tests_passed", "refId": "A"}],
       "fieldConfig": {
         "defaults": {
           "color": {"mode": "fixed", "fixedColor": "green"}

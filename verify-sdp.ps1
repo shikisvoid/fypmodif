@@ -2,6 +2,7 @@
 $ErrorActionPreference = "Stop"
 
 $composeFile = "docker-compose.sdp.yml"
+$hostBase = "http://127.0.0.1"
 $adminEmail  = "admin@hospital.com"
 $adminPass   = "Admin@123"
 $adminMfaSecret = "PVSU22Z3OBIWIZKXF52GWNDHLJJUMMSJKJJFI7L2IVAS44CJF42Q"
@@ -45,13 +46,13 @@ docker compose -f $composeFile down | Out-Null
 docker compose -f $composeFile up -d
 
 Write-Host "[2/8] Waiting for services..." -ForegroundColor Cyan
-Wait-Http200 "http://localhost:8088/health" 240
-Wait-Http200 "http://localhost:4000/" 240
-Wait-Http200 "http://localhost:3000/api/monitoring/health" 240
+Wait-Http200 "$hostBase`:8088/health" 240
+Wait-Http200 "$hostBase`:4000/" 240
+Wait-Http200 "$hostBase`:3000/api/monitoring/health" 240
 Write-Host "Services are up." -ForegroundColor Green
 
 Write-Host "[3/8] SDP check: protected endpoint without token should be denied..." -ForegroundColor Cyan
-$codeNoToken = Get-HttpCode -Url "http://localhost:8088/api/patients"
+$codeNoToken = Get-HttpCode -Url "$hostBase`:8088/api/patients"
 if ($codeNoToken -ne 401 -and $codeNoToken -ne 403) {
     throw "Expected 401/403 for unauthenticated /api/patients, got $codeNoToken"
 }
@@ -59,7 +60,7 @@ Write-Host "PASS: unauthenticated request denied ($codeNoToken)." -ForegroundCol
 
 Write-Host "[4/8] Login + MFA..." -ForegroundColor Cyan
 $loginBody = @{ email = $adminEmail; password = $adminPass } | ConvertTo-Json -Compress
-$loginResp = Invoke-RestMethod -Uri "http://localhost:8088/api/login" -Method POST -ContentType "application/json" -Body $loginBody
+$loginResp = Invoke-RestMethod -Uri "$hostBase`:8088/api/login" -Method POST -ContentType "application/json" -Body $loginBody
 if (-not $loginResp.success) { throw "Login failed: $($loginResp.error)" }
 
 $token = $null
@@ -68,7 +69,7 @@ if ($loginResp.mfaRequired -eq $true) {
     $mfaCode = ($mfaCode | Select-Object -Last 1).Trim()
 
     $mfaBody = @{ email = $adminEmail; code = $mfaCode } | ConvertTo-Json -Compress
-    $mfaResp = Invoke-RestMethod -Uri "http://localhost:8088/api/mfa/verify" -Method POST -ContentType "application/json" -Body $mfaBody
+    $mfaResp = Invoke-RestMethod -Uri "$hostBase`:8088/api/mfa/verify" -Method POST -ContentType "application/json" -Body $mfaBody
     if (-not $mfaResp.success) { throw "MFA failed: $($mfaResp.error)" }
     $token = $mfaResp.token
 } else {
@@ -79,16 +80,16 @@ Write-Host "PASS: authenticated and received token." -ForegroundColor Green
 
 Write-Host "[5/8] SDP check: authenticated SDP access should succeed..." -ForegroundColor Cyan
 $authHeaders = @{ Authorization = "Bearer $token" }
-$codeWithToken = Get-HttpCode -Url "http://localhost:8088/api/me" -Headers $authHeaders
+$codeWithToken = Get-HttpCode -Url "$hostBase`:8088/api/me" -Headers $authHeaders
 if ($codeWithToken -ne 200) {
     throw "Expected 200 for authenticated /api/me, got $codeWithToken"
 }
 Write-Host "PASS: authenticated request allowed ($codeWithToken)." -ForegroundColor Green
 
 Write-Host "[6/8] Verify health/monitoring endpoints..." -ForegroundColor Cyan
-$gw = Invoke-RestMethod -Uri "http://localhost:8088/health" -Method GET
-$telemetry = Invoke-RestMethod -Uri "http://localhost:9090/telemetry" -Method GET
-$isolations = Invoke-RestMethod -Uri "http://localhost:4100/isolations" -Method GET
+$gw = Invoke-RestMethod -Uri "$hostBase`:8088/health" -Method GET
+$telemetry = Invoke-RestMethod -Uri "$hostBase`:9090/telemetry" -Method GET
+$isolations = Invoke-RestMethod -Uri "$hostBase`:4100/isolations" -Method GET
 Write-Host "Gateway enforcement: $($gw.enforcement)" -ForegroundColor Yellow
 Write-Host "Telemetry entries: $($telemetry.recentTelemetry.Count)" -ForegroundColor Yellow
 Write-Host "Isolation actions: $($isolations.Count)" -ForegroundColor Yellow

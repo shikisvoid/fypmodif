@@ -176,27 +176,14 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.get('/health', async (req, res) => {
-  let controller = { reachable: false };
-  try {
-    const check = await postJson(`${SDP_CONTROLLER_URL}/authorize`, {
-      pathname: '/api/health',
-      method: 'GET',
-      identity: { email: 'health@local', role: 'admin' },
-      enforcement: false
-    });
-    controller = { reachable: check.status === 200 };
-  } catch (_err) {
-    controller = { reachable: false };
-  }
-
+app.get('/health', (req, res) => {
+  // Keep the gateway health check self-contained so it does not hang on downstream auth checks.
   res.json({
     ok: true,
     service: 'sdp-gateway',
     enforcement: SDP_ENFORCEMENT,
     failOpen: SDP_FAIL_OPEN,
     controllerUrl: SDP_CONTROLLER_URL,
-    controller,
     ts: new Date().toISOString()
   });
 });
